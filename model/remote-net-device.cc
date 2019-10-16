@@ -33,6 +33,36 @@ FdReader::Data RemoteNetDeviceFdReader::DoRead (void) {
     return FdReader::Data (buf, len);
 }
 
+TypeId RemoteNetDevice::GetTypeId () {
+    static TypeId tid = TypeId ("ns3::RemoteNetDevice")
+        .SetParent<NetDevice> ()
+        .SetGroupName ("RemoteNetDevice")
+        .AddConstructor<RemoteNetDevice> ()
+        .AddAttribute (
+            "Address",
+            "The MAC address of this device.",
+            Mac48AddressValue (Mac48Address ("ff:ff:ff:ff:ff:ff")),
+            MakeMac48AddressAccessor (&RemoteNetDevice::_address),
+            MakeMac48AddressChecker ())
+        .AddAttribute ("Start", "The simulation time at which to spin up the device thread.",
+            TimeValue (Seconds (0.)),
+            MakeTimeAccessor (&RemoteNetDevice::_start),
+            MakeTimeChecker ())
+        .AddAttribute ("Stop", "The simulation time at which to tear down the device thread.",
+            TimeValue (Seconds (0.)),
+            MakeTimeAccessor (&RemoteNetDevice::_stop),
+            MakeTimeChecker ())
+        .AddAttribute ("RxQueueSize", "Maximum size of the read queue.",
+            UintegerValue (1024),
+            MakeUintegerAccessor (&RemoteNetDevice::_queue_len),
+            MakeUintegerChecker<uint32_t> ());
+}
+
+RemoteNetDevice::RemoteNetDevice() :
+_node (0), _node_id(0), _if_index(0), _mtu(1400), _reader(0), _server(0),
+_port(0), _net(0), _link_up(false), _is_broadcast(false), _start_ev(), _stop_ev()  {
+    Start(_start);
+}
 
 }
 
