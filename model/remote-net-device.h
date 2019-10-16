@@ -14,7 +14,7 @@ class RemoteNetDeviceFdReader : public FdReader {
 public:
     RemoteNetDeviceFdReader (in_addr_t server_addr, in_port_t port, distributor::net_t net);
 
-    void StartClient();
+    void StartClient(Callback<void, uint8_t *, ssize_t> cb);
     void StopClient();
 
 private:
@@ -47,11 +47,11 @@ public:
     virtual bool IsBroadcast (void) const;
     virtual Address GetBroadcast (void) const;
     virtual bool IsMulticast (void) const;
-    virtual Address GetMulticast (Ipv4Address multicastGroup) const;
+    virtual Address GetMulticast (Ipv4Address group) const;
     virtual bool IsPointToPoint (void) const;
     virtual bool IsBridge (void) const;
-    virtual bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber);
-    virtual bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber);
+    virtual bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocol);
+    virtual bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocol);
     virtual Ptr<Node> GetNode (void) const;
     virtual void SetNode (Ptr<Node> node);
     virtual bool NeedsArp (void) const;
@@ -71,10 +71,6 @@ private:
     void StopDevice ();
     void ReceiveCallback (uint8_t *buf, ssize_t len);
     void ForwardUp ();
-    bool TransmitStart (Ptr<Packet> p);
-    void NotifyLinkUp (void);
-
-    bool _running;
 
     Ptr<Node> _node;
     uint32_t _node_id;
