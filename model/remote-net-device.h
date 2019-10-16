@@ -17,6 +17,7 @@ public:
 
     void StartClient(Callback<void, uint8_t *, ssize_t> cb);
     void StopClient();
+    ssize_t WriteClient(const uint8_t *buffer, size_t size);
 
 private:
     distributor::FdClient _client;

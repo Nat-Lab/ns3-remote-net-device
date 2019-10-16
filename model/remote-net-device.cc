@@ -7,6 +7,8 @@
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE ("FdNetDevice");
+
 RemoteNetDeviceFdReader::RemoteNetDeviceFdReader(in_addr_t server_addr, in_port_t port, distributor::net_t net) :
 _client(server_addr, port, net) {}
 
@@ -19,6 +21,15 @@ void RemoteNetDeviceFdReader::StopClient () {
     Stop();
     _client.Stop();
     _client.Join();
+}
+
+ssize_t RemoteNetDeviceFdReader::WriteClient (const uint8_t *buffer, size_t size) {
+    int fd = _client.GetFd();
+    if (fd < 0) {
+        NS_LOG_ERROR("Client not ready.");
+        return 0;
+    }
+    return write(fd, buffer, size);
 }
 
 FdReader::Data RemoteNetDeviceFdReader::DoRead (void) {
@@ -268,6 +279,46 @@ void RemoteNetDevice::SetIsBroadcast (bool broadcast) {
 
 void RemoteNetDevice::SetIsMulticast (bool multicast) {
     _is_multicast = multicast;
+}
+
+bool RemoteNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocol) {
+    return SendFrom(packet, _address, dest, protocol);
+}
+
+bool RemoteNetDevice::SendFrom (Ptr<Packet> packet, const Address& src, const Address& dst, uint16_t protocol) {
+    if (!_link_up) {
+        NS_LOG_DEBUG("dropped received packet. (not up)");
+        return false;
+    }
+
+    Mac48Address destination = Mac48Address::ConvertFrom (dst);
+    Mac48Address source = Mac48Address::ConvertFrom (src);
+
+    NS_LOG_LOGIC ("Transmit packet with UID " << packet->GetUid ());
+    NS_LOG_LOGIC ("Transmit packet from " << source);
+    NS_LOG_LOGIC ("Transmit packet to " << destination);
+
+    EthernetHeader header (false);
+    header.SetSource (source);
+    header.SetDestination (destination);
+
+    NS_ASSERT_MSG (packet->GetSize () <= _mtu, "Packet too big: " << packet->GetSize ());
+    header.SetLengthType (protocol);
+    packet->AddHeader (header);
+
+    size_t len = (size_t) packet->GetSize ();
+    uint8_t *buffer = (uint8_t*) malloc (len);
+    packet->CopyData (buffer, len);
+
+    ssize_t written = _reader->WriteClient(buffer, len);
+    free (buffer); // TODO static alloc
+
+    if (written < 0) {
+        NS_LOG_ERROR("Error writing to client.");
+        return false;
+    }
+
+    return true;
 }
 
 }
