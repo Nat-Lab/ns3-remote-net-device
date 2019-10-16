@@ -66,7 +66,7 @@ TypeId RemoteNetDevice::GetTypeId () {
 
 RemoteNetDevice::RemoteNetDevice() :
 _node (0), _node_id(0), _if_index(0), _mtu(1400), _reader(0), _server(0),
-_port(0), _net(0), _link_up(false), _is_broadcast(false), _start_ev(), _stop_ev()  {
+_port(0), _net(0), _link_up(false), _is_broadcast(true), _is_multicast(false), _start_ev(), _stop_ev()  {
     Start(_start);
 }
 
@@ -113,6 +113,7 @@ void RemoteNetDevice::StartDevice () {
     _reader->StartClient(MakeCallback (&RemoteNetDevice::ReceiveCallback, this));
 
     _link_up = true;
+    _link_callbacks();
 }
 
 void RemoteNetDevice::StopDevice () {
@@ -167,21 +168,106 @@ void RemoteNetDevice::ForwardUp () {
     uint16_t protocol = header.GetLengthType ();
 
     PacketType type;
-    if (destination.IsGroup()) {
-        NS_LOG_WARN("Multicast not implemented.");
-        return;
-    }
 
     if (destination.IsBroadcast()) type = NS3_PACKET_BROADCAST;
     else if (destination == _address) type = NS3_PACKET_HOST;
+    else if (destination.IsGroup()) type = NS3_PACKET_MULTICAST;
     else type = NS3_PACKET_OTHERHOST;
-
 
     _prx_callback(this, packet, protocol, source, destination, type);
 
     if (type == NS3_PACKET_HOST || type == NS3_PACKET_BROADCAST) {
         _rx_callback(this, packet, protocol, source);
     }
+}
+
+void RemoteNetDevice::SetIfIndex (const uint32_t index) {
+    _if_index = index;
+}
+
+uint32_t RemoteNetDevice::GetIfIndex (void) const {
+    return _if_index;
+}
+
+Ptr<Channel> RemoteNetDevice::GetChannel (void) const {
+    return NULL;
+}
+
+bool RemoteNetDevice::SetMtu (const uint16_t mtu) {
+    _mtu = mtu;
+    return true;
+}
+
+uint16_t RemoteNetDevice::GetMtu (void) const {
+    return _mtu;
+}
+
+bool RemoteNetDevice::IsLinkUp (void) const {
+    return _link_up;
+}
+
+void RemoteNetDevice::AddLinkChangeCallback (Callback<void> callback) {
+    _link_callbacks.ConnectWithoutContext(callback);
+}
+
+bool RemoteNetDevice::IsBroadcast (void) const {
+    return _is_broadcast;
+}
+
+Address RemoteNetDevice::GetBroadcast (void) const {
+    return Mac48Address ("ff:ff:ff:ff:ff:ff");
+}
+
+bool RemoteNetDevice::IsMulticast (void) const {
+    return _is_multicast;
+}
+
+Address RemoteNetDevice::GetMulticast (Ipv6Address addr) const {
+    return Mac48Address::GetMulticast (addr);
+}
+
+Address RemoteNetDevice::GetMulticast (Ipv4Address group) const {
+    return Mac48Address::GetMulticast (group);
+}
+
+bool RemoteNetDevice::IsPointToPoint (void) const {
+    return false;
+}
+
+bool RemoteNetDevice::IsBridge (void) const {
+    return false;
+}
+
+Ptr<Node> RemoteNetDevice::GetNode (void) const {
+    return _node;
+}
+
+void RemoteNetDevice::SetNode (Ptr<Node> node) {
+    _node = node;
+}
+
+bool RemoteNetDevice::NeedsArp (void) const {
+    return true;
+}
+
+void RemoteNetDevice::SetReceiveCallback (NetDevice::ReceiveCallback cb) {
+    _rx_callback = cb;
+}
+
+void RemoteNetDevice::SetPromiscReceiveCallback (NetDevice::PromiscReceiveCallback cb) {
+    _prx_callback = cb;
+}
+
+bool RemoteNetDevice::SupportsSendFrom () const {
+    return true;
+}
+
+void RemoteNetDevice::SetIsBroadcast (bool broadcast) {
+    _is_broadcast = broadcast;
+}
+
+void RemoteNetDevice::SetIsMulticast (bool multicast) {
+    _is_multicast = multicast;
 }
 
 }

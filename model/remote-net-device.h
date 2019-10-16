@@ -5,6 +5,7 @@
 #include "ns3/unix-fd-reader.h"
 #include "ns3/system-mutex.h"
 #include "ns3/simulator.h"
+#include "ns3/traced-callback.h"
 #include "vendor/distributor/src/types.h"
 #include "vendor/distributor/src/fd-client.h"
 
@@ -48,19 +49,20 @@ public:
     virtual Address GetBroadcast (void) const;
     virtual bool IsMulticast (void) const;
     virtual Address GetMulticast (Ipv4Address group) const;
+    virtual Address GetMulticast (Ipv6Address addr) const;
     virtual bool IsPointToPoint (void) const;
     virtual bool IsBridge (void) const;
-    virtual bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocol);
-    virtual bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocol);
     virtual Ptr<Node> GetNode (void) const;
     virtual void SetNode (Ptr<Node> node);
     virtual bool NeedsArp (void) const;
     virtual void SetReceiveCallback (NetDevice::ReceiveCallback cb);
     virtual void SetPromiscReceiveCallback (NetDevice::PromiscReceiveCallback cb);
     virtual bool SupportsSendFrom () const;
-    virtual Address GetMulticast (Ipv6Address addr) const;
     virtual void SetIsBroadcast (bool broadcast);
     virtual void SetIsMulticast (bool multicast);
+
+    virtual bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocol);
+    virtual bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocol);
 
 protected:
     virtual void DoDispose (void);
@@ -85,6 +87,7 @@ private:
     Mac48Address _address;
     bool _link_up;
     bool _is_broadcast;
+    bool _is_multicast;
     std::queue<std::pair<uint8_t*, ssize_t>> _queue;
     uint32_t _queue_len;
     SystemMutex _queue_mtx;
@@ -96,6 +99,7 @@ private:
 
     NetDevice::ReceiveCallback _rx_callback;
     NetDevice::PromiscReceiveCallback _prx_callback;
+    TracedCallback<> _link_callbacks;
 };
 
 }
