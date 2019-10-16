@@ -14,6 +14,9 @@ class RemoteNetDeviceFdReader : public FdReader {
 public:
     RemoteNetDeviceFdReader (in_addr_t server_addr, in_port_t port, distributor::net_t net);
 
+    void StartClient();
+    void StopClient();
+
 private:
     distributor::FdClient _client;
     FdReader::Data DoRead (void);
@@ -21,6 +24,8 @@ private:
 
 class RemoteNetDevice : public NetDevice {
 public:
+    static TypeId GetTypeId ();
+
     RemoteNetDevice();
     virtual ~RemoteNetDevice ();
 
@@ -68,6 +73,8 @@ private:
     void ForwardUp ();
     bool TransmitStart (Ptr<Packet> p);
     void NotifyLinkUp (void);
+
+    bool _running;
 
     Ptr<Node> _node;
     uint32_t _node_id;
