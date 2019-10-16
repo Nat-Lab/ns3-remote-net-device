@@ -4,6 +4,7 @@
 #include "ns3/log.h"
 #include "ns3/node.h"
 #include <unistd.h>
+#include <arpa/inet.h>
 
 namespace ns3 {
 
@@ -109,9 +110,9 @@ void RemoteNetDevice::Stop (Time stop) {
     _stop_ev = Simulator::Schedule (stop, &RemoteNetDevice::StopDevice, this);
 }
 
-void RemoteNetDevice::SetRemote (in_addr_t server_addr, in_port_t port, distributor::net_t net) {
-    _server = server_addr;
-    _port = port;
+void RemoteNetDevice::SetRemote (const char* server_addr, in_port_t port, distributor::net_t net) {
+    _server = inet_addr(server_addr);
+    _port = htons(port);
     _net = net;
 }
 

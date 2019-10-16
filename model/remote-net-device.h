@@ -35,7 +35,7 @@ public:
     void Start (Time start);
     void Stop (Time stop);
 
-    void SetRemote (in_addr_t server_addr, in_port_t port, distributor::net_t net);
+    void SetRemote (const char* server_addr, in_port_t port, distributor::net_t net);
 
     // inherited
     virtual void SetIfIndex (const uint32_t index);
