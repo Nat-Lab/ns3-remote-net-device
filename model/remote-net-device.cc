@@ -7,7 +7,7 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("FdNetDevice");
+NS_LOG_COMPONENT_DEFINE ("RemoteNetDeviceFdReader");
 
 RemoteNetDeviceFdReader::RemoteNetDeviceFdReader(in_addr_t server_addr, in_port_t port, distributor::net_t net) :
 _client(server_addr, port, net) {}
