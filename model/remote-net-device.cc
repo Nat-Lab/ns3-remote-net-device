@@ -73,6 +73,8 @@ TypeId RemoteNetDevice::GetTypeId () {
             UintegerValue (1024),
             MakeUintegerAccessor (&RemoteNetDevice::_queue_len),
             MakeUintegerChecker<uint32_t> ());
+        
+        return tid;
 }
 
 RemoteNetDevice::RemoteNetDevice() :
@@ -202,6 +204,14 @@ uint32_t RemoteNetDevice::GetIfIndex (void) const {
 
 Ptr<Channel> RemoteNetDevice::GetChannel (void) const {
     return NULL;
+}
+
+void RemoteNetDevice::SetAddress (Address address) {
+    _address = Mac48Address::ConvertFrom (address);
+}
+
+Address RemoteNetDevice::GetAddress (void) const {
+    return _address;
 }
 
 bool RemoteNetDevice::SetMtu (const uint16_t mtu) {

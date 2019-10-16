@@ -6,6 +6,7 @@
 #include "ns3/system-mutex.h"
 #include "ns3/simulator.h"
 #include "ns3/traced-callback.h"
+#include "ns3/channel.h"
 #include "vendor/distributor/src/types.h"
 #include "vendor/distributor/src/fd-client.h"
 
@@ -80,11 +81,11 @@ private:
     uint32_t _if_index;
     uint16_t _mtu;
 
+    Ptr<RemoteNetDeviceFdReader> _reader;
     in_addr_t _server;
     in_port_t _port;
     distributor::net_t _net;
 
-    Ptr<RemoteNetDeviceFdReader> _reader;
     Mac48Address _address;
     bool _link_up;
     bool _is_broadcast;

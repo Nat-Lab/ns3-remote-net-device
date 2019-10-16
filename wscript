@@ -9,12 +9,9 @@
 def build(bld):
     module = bld.create_ns3_module('remote-net-device', ['core'])
     module.source = [
-        'model/remote-net-device.cc'
-        ]
-
-    module_test = bld.create_ns3_module_test_library('remote-net-device')
-    module_test.source = [
-        'test/remote-net-device-test-suite.cc',
+        'model/remote-net-device.cc',
+        'model/vendor/distributor/src/distributor-client.cc',
+        'model/vendor/distributor/src/fd-client.cc'
         ]
 
     headers = bld(features='ns3header')
