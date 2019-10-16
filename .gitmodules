@@ -1,0 +1,6 @@
+[submodule "vendor/distributor"]
+	path = vendor/distributor
+	url = https://github.com/nat-lab/distributor
+[submodule "model/vendor/distributor"]
+	path = model/vendor/distributor
+	url = https://github.com/nat-lab/distributor
