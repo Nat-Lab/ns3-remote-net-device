@@ -188,10 +188,10 @@ void RemoteNetDevice::ForwardUp () {
     else if (destination.IsGroup()) type = NS3_PACKET_MULTICAST;
     else type = NS3_PACKET_OTHERHOST;
 
-    _prx_callback(this, packet, protocol, source, destination, type);
+    if (!_prx_callback.IsNull()) _prx_callback(this, packet, protocol, source, destination, type);
 
     if (type == NS3_PACKET_HOST || type == NS3_PACKET_BROADCAST) {
-        _rx_callback(this, packet, protocol, source);
+        if (!_rx_callback.IsNull()) _rx_callback(this, packet, protocol, source);
     }
 }
 
