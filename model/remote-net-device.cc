@@ -73,7 +73,17 @@ TypeId RemoteNetDevice::GetTypeId () {
         .AddAttribute ("RxQueueSize", "Maximum size of the read queue.",
             UintegerValue (1024),
             MakeUintegerAccessor (&RemoteNetDevice::_queue_len),
-            MakeUintegerChecker<uint32_t> ());
+            MakeUintegerChecker<uint32_t> ())
+        .AddTraceSource("Sniff", 
+            "Trace source simulating a non-promiscuous "
+            "packet sniffer attached to the device",
+            MakeTraceSourceAccessor (&RemoteNetDevice::_sniff),
+            "ns3::Packet::TracedCallback")
+        .AddTraceSource("PromiscSniffer", 
+            "Trace source simulating a promiscuous "
+            "packet sniffer attached to the device",
+            MakeTraceSourceAccessor (&RemoteNetDevice::_sniff_promisc),
+            "ns3::Packet::TracedCallback");
         
         return tid;
 }
@@ -167,6 +177,7 @@ void RemoteNetDevice::ForwardUp () {
 
     // copy to ns3-packet
     Ptr<Packet> packet = Create<Packet> (reinterpret_cast<const uint8_t *> (buf), len);
+    Ptr<Packet> orig_packet = packet->Copy();
     free (buf);
 
     EthernetHeader header (false);
@@ -188,10 +199,14 @@ void RemoteNetDevice::ForwardUp () {
     else if (destination.IsGroup()) type = NS3_PACKET_MULTICAST;
     else type = NS3_PACKET_OTHERHOST;
 
+    _sniff_promisc(orig_packet);
     if (!_prx_callback.IsNull()) _prx_callback(this, packet, protocol, source, destination, type);
 
     if (type == NS3_PACKET_HOST || type == NS3_PACKET_BROADCAST) {
-        if (!_rx_callback.IsNull()) _rx_callback(this, packet, protocol, source);
+        _sniff(orig_packet);
+        if (!_rx_callback.IsNull()) {
+            _rx_callback(this, packet, protocol, source);
+        }
     }
 }
 
@@ -320,6 +335,9 @@ bool RemoteNetDevice::SendFrom (Ptr<Packet> packet, const Address& src, const Ad
     size_t len = (size_t) packet->GetSize ();
     uint8_t *buffer = (uint8_t*) malloc (len);
     packet->CopyData (buffer, len);
+
+    _sniff(packet);
+    _sniff_promisc(packet);
 
     ssize_t written = _reader->WriteClient(buffer, len);
     free (buffer); // TODO static alloc

@@ -102,6 +102,8 @@ private:
     NetDevice::ReceiveCallback _rx_callback;
     NetDevice::PromiscReceiveCallback _prx_callback;
     TracedCallback<> _link_callbacks;
+    TracedCallback<Ptr<const Packet>> _sniff;
+    TracedCallback<Ptr<const Packet>> _sniff_promisc;
 };
 
 }
