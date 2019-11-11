@@ -9,7 +9,7 @@ In ns3 source folder (where the `waf` is located), run the following commands:
 
 ```
 $ git clone --recursive https://github.com/nat-lab/ns3-remote-net-device src/remote-net-device
-$ ln -s src/remote-net-device/model/vendor build/vendor
+$ ln -s ../src/remote-net-device/model/vendor build/vendor
 ```
 
 ### Usage
